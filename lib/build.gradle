@@ -15,6 +15,10 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    scala3_version = '3.6.4'
+}
+
 dependencies {
     // Use JUnit test framework.
     testImplementation libs.junit
