@@ -8,7 +8,19 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    // code coverage jacoco
+    id 'jacoco'
 }
+
+
+// the maven identifiers
+group = 'org.zoomba-lang'
+version = '0.1-SNAPSHOT'
+
+base{
+    archivesName = 'scala3-scripting'
+}
+
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -36,4 +48,35 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [] )
+        }))
+    }
+}
+
+jar {
+    // Keep jar clean:
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+    manifest {
+        attributes "cowj-build-on" : new Date().format('yyyy-MM-dd HH:mm:ss'), // setup the build time to be absolutely sure
+                'Class-Path': configurations.runtimeClasspath.files.collect { "deps/$it.name" }.join(' ')
+    }
+    // to execute anything, go to the libs folder, and then do java -jar cowj
+    // the deps folder should have all dependencies
 }
