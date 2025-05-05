@@ -3,15 +3,15 @@ package org.zoomba.scala3;
 import dotty.tools.repl.ScriptEngine;
 
 import javax.script.Bindings;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
-public interface CodeGen {
+public final class CodeGen {
 
     static String loadFile( URL url ){
         try {
@@ -21,36 +21,27 @@ public interface CodeGen {
         }
     }
 
-    String MACRO = loadFile( CodeGen.class.getClassLoader().getResource("Template.scala") );
+    static final String MACRO = loadFile( CodeGen.class.getClassLoader().getResource("Template.scala") );
 
-    static Method method(Object o){
-        try {
-            return o.getClass().getDeclaredMethod("exec", Bindings.class);
-        }catch (Throwable t){
-            return null;
-        }
-    }
-
-    static Object makeObject(String scalaSrc) {
+    static Function<Bindings,Object> function(String scalaSrc) {
         ScriptEngine sc = new ScriptEngine();
         String postMacro = String.format( MACRO,  scalaSrc );
         try {
-            return sc.eval( postMacro );
+            Object o = sc.eval( postMacro );
+            return (Function<Bindings, Object>) o;
         }catch (Throwable t){
             return null;
         }
     }
 
-    Map<String, Map.Entry<Method,Object>>  cache = new HashMap<>();
+    static final Map<String, Function<Bindings,Object>>  cache = new HashMap<>();
 
-    static Object execute(String scalaSrc,  Bindings b) throws Throwable {
-        Map.Entry<Method,Object> e = cache.get(scalaSrc);
-        if ( e == null ) {
-            Object thisObject = makeObject(scalaSrc);
-            Method m = method(thisObject);
-            e = Map.of(m, thisObject).entrySet().iterator().next();
-            cache.put(scalaSrc, e );
+    public static Object execute(String scalaSrc,  Bindings b) throws Throwable {
+        Function<Bindings,Object> f = cache.get(scalaSrc);
+        if ( f == null ) {
+            f = function(scalaSrc);
+            cache.put(scalaSrc, f );
         }
-        return e.getKey().invoke(e.getValue(), b);
+        return f.apply(b);
     }
 }
