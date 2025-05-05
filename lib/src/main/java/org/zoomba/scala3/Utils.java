@@ -8,7 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public enum Utils {
+enum Utils {
     ;
 
     static String loadFile( URL url ){

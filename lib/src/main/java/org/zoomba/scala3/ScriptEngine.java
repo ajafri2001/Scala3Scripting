@@ -2,16 +2,21 @@ package org.zoomba.scala3;
 
 import javax.script.*;
 import java.io.Reader;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import static org.zoomba.scala3.Utils.scriptException;
 import static org.zoomba.scala3.Utils.string;
 
+/**
+ * A Scala3 JSR-223 Compliant Script Engine
+ */
 public final class ScriptEngine extends AbstractScriptEngine implements Compilable {
 
+    /**
+     * The underlying factory, if at all it is needed
+     * It is not really needed
+     */
     public static final ScriptEngineFactory FACTORY = new ScriptEngineFactory() {
         @Override
         public String getEngineName() {
@@ -78,8 +83,6 @@ public final class ScriptEngine extends AbstractScriptEngine implements Compilab
             new ScriptException( new UnsupportedOperationException (
                     "we do not support this - this design is multithreading nightmare!" ));
 
-    static final Map<String,CodeGen> CACHE = new HashMap<>();
-
     @Override
     public Object eval(String s, ScriptContext scriptContext) throws ScriptException {
         throw MULTITHREADING_NIGHTMARE_PURITY;
@@ -120,7 +123,6 @@ public final class ScriptEngine extends AbstractScriptEngine implements Compilab
     }
 
     private ScriptEngine(){}
-
 
     @Override
     public CompiledScript compile(String s) throws ScriptException {
@@ -163,5 +165,9 @@ public final class ScriptEngine extends AbstractScriptEngine implements Compilab
         }
     }
 
+    /**
+     * An Instance of the Script Engine
+     * We do not need to have anything impure so one instance is more than good enough
+     */
     public static final ScriptEngine ENGINE = new ScriptEngine();
 }
