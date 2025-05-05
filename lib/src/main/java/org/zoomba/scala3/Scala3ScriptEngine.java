@@ -3,6 +3,7 @@ package org.zoomba.scala3;
 import javax.script.*;
 import java.io.Reader;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static org.zoomba.scala3.Utils.scriptException;
@@ -11,7 +12,7 @@ import static org.zoomba.scala3.Utils.string;
 /**
  * A Scala3 JSR-223 Compliant Script Engine
  */
-public final class ScriptEngine extends AbstractScriptEngine implements Compilable {
+public final class Scala3ScriptEngine extends AbstractScriptEngine implements Compilable {
 
     /**
      * The underlying factory, if at all it is needed
@@ -75,7 +76,7 @@ public final class ScriptEngine extends AbstractScriptEngine implements Compilab
 
         @Override
         public javax.script.ScriptEngine getScriptEngine() {
-            return ScriptEngine.ENGINE;
+            return Scala3ScriptEngine.ENGINE;
         }
     };
 
@@ -122,35 +123,54 @@ public final class ScriptEngine extends AbstractScriptEngine implements Compilab
         return FACTORY;
     }
 
-    private ScriptEngine(){}
+    private Scala3ScriptEngine(){}
+
+
+    final static class ScalaCompiledScript extends CompiledScript {
+
+        final Function<Bindings,Object> scalaFunction;
+
+        ScalaCompiledScript(Function<Bindings,Object> scalaFunction){
+            this.scalaFunction = scalaFunction ;
+        }
+
+        @Override
+        public Object eval(ScriptContext scriptContext) throws ScriptException {
+            throw MULTITHREADING_NIGHTMARE_PURITY;
+        }
+
+        @Override
+        public Object eval(Bindings bindings) throws ScriptException {
+            return scalaFunction.apply(bindings);
+        }
+
+        @Override
+        public Object eval() throws ScriptException {
+            return eval(ENGINE.createBindings());
+        }
+
+        @Override
+        public javax.script.ScriptEngine getEngine() {
+            return ENGINE;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            ScalaCompiledScript that = (ScalaCompiledScript) o;
+            return Objects.equals(scalaFunction, that.scalaFunction);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(scalaFunction);
+        }
+    }
 
     @Override
     public CompiledScript compile(String s) throws ScriptException {
         try{
-            return new CompiledScript() {
-
-                Function<Bindings,Object> scalaFunction = CodeGen.function(s);
-
-                @Override
-                public Object eval(ScriptContext scriptContext) throws ScriptException {
-                    throw MULTITHREADING_NIGHTMARE_PURITY;
-                }
-
-                @Override
-                public Object eval(Bindings bindings) throws ScriptException {
-                    return scalaFunction.apply(bindings);
-                }
-
-                @Override
-                public Object eval() throws ScriptException {
-                    return eval(ENGINE.createBindings());
-                }
-
-                @Override
-                public javax.script.ScriptEngine getEngine() {
-                    return ENGINE;
-                }
-            };
+            return new ScalaCompiledScript( CodeGen.function(s)) ;
         }catch (Throwable t){
             throw scriptException(t);
         }
@@ -169,5 +189,5 @@ public final class ScriptEngine extends AbstractScriptEngine implements Compilab
      * An Instance of the Script Engine
      * We do not need to have anything impure so one instance is more than good enough
      */
-    public static final ScriptEngine ENGINE = new ScriptEngine();
+    public static final Scala3ScriptEngine ENGINE = new Scala3ScriptEngine();
 }

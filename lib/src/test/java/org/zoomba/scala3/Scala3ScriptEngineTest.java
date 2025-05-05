@@ -9,7 +9,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 
-public class ScriptEngineTest {
+public class Scala3ScriptEngineTest {
 
     final String PRINT_HELLO = "println( \"Hello, World!\")" ;
 
@@ -17,11 +17,11 @@ public class ScriptEngineTest {
 
     @Test
     public void helloWorld() throws Throwable{
-        ScriptEngine.ENGINE.eval( PRINT_HELLO,   new SimpleBindings() );
+        Scala3ScriptEngine.ENGINE.eval( PRINT_HELLO,   new SimpleBindings() );
     }
 
     @Test
     public void useBinding() throws Throwable{
-        assertEquals( 42, ScriptEngine.ENGINE.eval( USE_BINDING,   new SimpleBindings(Map.of("x", 42 )) ) );
+        assertEquals( 42, Scala3ScriptEngine.ENGINE.eval( USE_BINDING,   new SimpleBindings(Map.of("x", 42 )) ) );
     }
 }
