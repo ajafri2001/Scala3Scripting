@@ -31,13 +31,13 @@ enum Utils {
     }
 
     static ScriptException scriptException(Throwable t){
-        final RuntimeException re;
-        if ( t instanceof RuntimeException ){
-            re = (RuntimeException)t;
-        } else {
-            re = new RuntimeException(t);
+        if ( t instanceof ScriptException ){
+            return (ScriptException)t;
         }
-        return new ScriptException(re);
-    }
+        if ( t instanceof Exception ){
+            return new ScriptException( (Exception)t);
+        }
 
+        return new ScriptException( new RuntimeException(t) );
+    }
 }
