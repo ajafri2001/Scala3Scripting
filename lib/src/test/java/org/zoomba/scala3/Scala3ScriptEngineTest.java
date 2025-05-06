@@ -6,6 +6,7 @@ import javax.script.CompiledScript;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,8 @@ public class Scala3ScriptEngineTest {
         assertEquals("println(x)\nx = func(y)",  Scala3ScriptEngine.FACTORY.getProgram("println(x)" , "x = func(y)" ) );
 
         assertSame( Scala3ScriptEngine.ENGINE, Scala3ScriptEngine.FACTORY.getScriptEngine() );
+        assertSame( Scala3ScriptEngine.FACTORY, Scala3ScriptEngine.ENGINE.getFactory() );
+
     }
 
     @Test
@@ -61,9 +64,18 @@ public class Scala3ScriptEngineTest {
         assertSame( Scala3ScriptEngine.ENGINE,  cs.getEngine() );
         assertTrue( cs.equals(cs ) );
         assertTrue( cs.equals( Scala3ScriptEngine.ENGINE.compile( USE_BINDING ) ) );
+        assertTrue( cs.equals( Scala3ScriptEngine.ENGINE.compile( new StringReader(USE_BINDING) ) ) );
+
         assertFalse( cs.equals( Scala3ScriptEngine.ENGINE.compile( PRINT_HELLO ) ) );
         assertFalse( cs.equals( null  ) );
         assertFalse( cs.equals( 42  ) );
         assertNotEquals( 0, cs.hashCode() );
+    }
+
+    @Test
+    public void compilableMethodsTest() throws Exception {
+        assertThrows( ScriptException.class, () -> Scala3ScriptEngine.ENGINE.compile( "foo-bar") );
+        assertThrows( ScriptException.class, () -> Scala3ScriptEngine.ENGINE.compile( new StringReader("foo-bar") ) );
+
     }
 }
