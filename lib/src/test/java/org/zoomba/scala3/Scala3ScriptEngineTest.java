@@ -2,6 +2,8 @@ package org.zoomba.scala3;
 
 import org.junit.Test;
 
+import javax.script.CompiledScript;
+import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import java.util.List;
@@ -48,5 +50,20 @@ public class Scala3ScriptEngineTest {
         assertEquals("println(x)\nx = func(y)",  Scala3ScriptEngine.FACTORY.getProgram("println(x)" , "x = func(y)" ) );
 
         assertSame( Scala3ScriptEngine.ENGINE, Scala3ScriptEngine.FACTORY.getScriptEngine() );
+    }
+
+    @Test
+    public void compiledScriptTest() throws Exception {
+        CompiledScript cs =  Scala3ScriptEngine.ENGINE.compile( USE_BINDING );
+        Exception ex =  assertThrows( ScriptException.class, () -> cs.eval( Scala3ScriptEngine.ENGINE.getContext())) ;
+        assertSame( Scala3ScriptEngine.MULTITHREADING_NIGHTMARE_PURITY, ex);
+        assertNull( cs.eval() ) ;
+        assertSame( Scala3ScriptEngine.ENGINE,  cs.getEngine() );
+        assertTrue( cs.equals(cs ) );
+        assertTrue( cs.equals( Scala3ScriptEngine.ENGINE.compile( USE_BINDING ) ) );
+        assertFalse( cs.equals( Scala3ScriptEngine.ENGINE.compile( PRINT_HELLO ) ) );
+        assertFalse( cs.equals( null  ) );
+        assertFalse( cs.equals( 42  ) );
+        assertNotEquals( 0, cs.hashCode() );
     }
 }
