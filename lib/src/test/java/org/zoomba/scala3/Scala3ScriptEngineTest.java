@@ -20,13 +20,23 @@ public class Scala3ScriptEngineTest {
     final String USE_BINDING = "_mem.get( \"x\" ) " ;
 
     @Test
-    public void helloWorld() throws Throwable{
+    public void evalFunctionsTest() throws Throwable{
         Scala3ScriptEngine.ENGINE.eval( PRINT_HELLO,   new SimpleBindings() );
-    }
-
-    @Test
-    public void useBinding() throws Throwable{
         assertEquals( 42, Scala3ScriptEngine.ENGINE.eval( USE_BINDING,   new SimpleBindings(Map.of("x", 42 )) ) );
+        assertEquals( 42, Scala3ScriptEngine.ENGINE.eval( new StringReader(USE_BINDING),   new SimpleBindings(Map.of("x", 42 )) ) );
+
+        assertThrows( ScriptException.class, () ->
+                Scala3ScriptEngine.ENGINE.eval( "foo-bar",   new SimpleBindings(Map.of("x", 42 )) ) );
+        assertThrows( ScriptException.class, () ->
+                Scala3ScriptEngine.ENGINE.eval( new StringReader("foo-bar"),   new SimpleBindings(Map.of("x", 42 )) ) );
+
+
+        Exception ex = assertThrows( ScriptException.class, () ->
+                Scala3ScriptEngine.ENGINE.eval( "foo-bar",   Scala3ScriptEngine.ENGINE.getContext() ) );
+        assertSame( Scala3ScriptEngine.MULTITHREADING_NIGHTMARE_PURITY, ex );
+        assertThrows( ScriptException.class, () ->
+                Scala3ScriptEngine.ENGINE.eval( new StringReader("foo-bar"),   Scala3ScriptEngine.ENGINE.getContext() ) );
+        assertSame( Scala3ScriptEngine.MULTITHREADING_NIGHTMARE_PURITY, ex );
     }
 
     @Test
