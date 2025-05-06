@@ -2,6 +2,7 @@ package org.zoomba.scala3;
 
 import javax.script.*;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -60,18 +61,20 @@ public final class Scala3ScriptEngine extends AbstractScriptEngine implements Co
         }
 
         @Override
-        public String getMethodCallSyntax(String s, String s1, String... strings) {
-            return "";
+        public String getMethodCallSyntax(String objectName, String methodName, String... argNames) {
+            String binding =  objectName + "." + methodName + "("  ;
+            String args = String.join(",",  argNames ) ;
+            return binding + args + ")" ;
         }
 
         @Override
-        public String getOutputStatement(String s) {
-            return "";
+        public String getOutputStatement(String toDisplay) {
+            return "println(" + toDisplay + ")";
         }
 
         @Override
         public String getProgram(String... strings) {
-            return "";
+            return String.join("\n", strings );
         }
 
         @Override
